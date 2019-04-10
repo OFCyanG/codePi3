@@ -1,0 +1,107 @@
+#include <ESP8266WiFi.h>
+#include <PubSubClient.h>
+#include <DHT.h>
+
+
+#define DHTTYPE DHT22 
+
+const char* ssid = "FIL TPLink 1";
+const char* password = "filtplink1111";
+const char* mqttServer = "filiotteam.ml";
+const int mqttPort=1883;
+const char* mqttUser="fillab";
+const char* mqttPassword="123123123";
+
+
+uint8_t DHTPin = D6; 
+DHT dht(DHTPin, DHTTYPE);     
+float Temperature;
+float Humidity;
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+int hum;
+String msg;
+String macAdd;
+
+void getHum()
+{
+  hum = analogRead(A0);
+  hum = map(hum,0,1023,100,0);
+  msg = "{\"mac\":\""+macAdd+"\",\"param\":{\"hum\":"+hum+"}}";
+  int len = msg.length();
+  char charBuf[len+1];
+  msg.toCharArray(charBuf, len+1);
+}
+void reconnect()
+{
+    while(!client.connected())
+  {
+    Serial.println("Connecting to MQTT...");
+    if (client.connect("ESP8266Client",mqttUser,mqttPassword))
+    {
+      Serial.println("Connected!!!");
+    }
+    else
+    {
+      Serial.print("failed with state ");
+      Serial.print(client.state());
+      delay(2000);
+    }
+  }
+}
+void setupWifi()
+{
+  WiFi.persistent(false);
+  WiFi.forceSleepWake();
+  delay(2000);
+  WiFi.begin(ssid,password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("Connected to Wifi!!");
+  macAdd= WiFi.macAddress();
+
+  client.setServer(mqttServer,mqttPort);
+  delay(1000);
+}
+void setup()
+{
+
+  Serial.begin(115200);
+  Serial.setTimeout(2000);
+  delay(100);
+
+  
+  pinMode(DHTPin, INPUT);
+  dht.begin();
+  
+  while(!Serial) { }
+  setupWifi();
+  reconnect();
+  
+  hum = analogRead(A0);
+  hum = map(hum,0,1023,100,0);
+
+  Temperature = dht.readTemperature(); 
+  Humidity = dht.readHumidity();
+  
+
+  msg = "{\"mac\":\""+macAdd+"\",\"param\":{\"hum\":"+hum+",\"temp\":"+Temperature+",\"humk\":"+Humidity+"}}";
+  Serial.println(msg);  
+  int len = msg.length();
+  char charBuf[len+1];
+  msg.toCharArray(charBuf, len+1);
+  client.publish("/data/packet",charBuf);
+  delay(2000);
+  Serial.println("I'm awake, but I'm going into deep sleep mode for 30 seconds");
+  ESP.deepSleep(15e6);
+  
+}
+void loop()
+{
+ 
+}
