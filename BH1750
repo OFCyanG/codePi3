@@ -1,0 +1,43 @@
+/*
+  nodeMCU   BH1750
+  D3        SCL
+  D4        SDA
+  GND       GND
+  3.3       VCC
+  GND       ADDR
+*/
+
+
+#include <Wire.h>
+#include <BH1750.h>
+
+BH1750 lightMeter(0x23);
+
+void setup(){
+
+  Serial.begin(115200);
+  Wire.begin(D4,D3);
+  // On esp8266 you can select SCL and SDA pins using Wire.begin(D4, D3);
+
+  
+
+  // begin returns a boolean that can be used to detect setup problems.
+  if (lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE)) {
+    Serial.println(F("BH1750 Advanced begin"));
+  }
+  else {
+    Serial.println(F("Error initialising BH1750"));
+  }
+
+}
+
+
+void loop() {
+
+  float lux = lightMeter.readLightLevel();
+  Serial.print("Light: ");
+  Serial.print(lux);
+  Serial.println(" lx");
+  delay(1000);
+
+}
