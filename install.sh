@@ -4,3 +4,14 @@ sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get install libcurl3
 sudo apt-get install -y mongodb-org
+
+mongod --version
+mongo --version
+
+sudo dd if=/dev/zero of=/swapfile.img bs=1M count=2048
+sudo mkswap /swapfile.img
+sudo swapon /swapfile.img
+cat /proc/swaps
+
+sudo service mongod start
+sudo service mongod status
