@@ -14,4 +14,5 @@ sudo swapon /swapfile.img
 cat /proc/swaps
 
 sudo service mongod start
-sudo service mongod status
+
+sudo apt-get install wpasupplicant wire-tools ifupdown
