@@ -1,9 +1,8 @@
+script_node_red_services="[Unit]\nDescription=Node-RED\nAfter=syslog.target network.target\n\n[Service]\nExecStart=`which 'node-red'`-pi --max-old-space-size=128 -v\nRestart=on-failure\nKillSignal=SIGINT\nSyslogIdentifier=node-red\nStandardOutput=syslog\nWorkingDirectory=/home/`echo $USER`/\nUser=`echo $USER`\n\n[Install]\nWantedBy=multi-user.target"
 
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4
-echo "deb [ arch=amd64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.0.list
+echo -e $script_node_red_services > ./node-red.service
+sudo cp -f ./node-red.service /etc/systemd/system/node-red.service
 
-sudo apt-get update
-sudo apt-get upgrade
-sudo apt-get install libcurl3
-sudo apt-get install -y mongodb-org
-
+sudo systemctl daemon-reload
+sudo systemctl enable node-red.service
+sudo systemctl start node-red.service
